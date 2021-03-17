@@ -46,8 +46,6 @@ void input() {
 	//sort the input
 	sort(x + 1, x + n + 1);
 	sort(y + 1, y + n + 1);
-	n = n + 10;
-	n = n - 10;
 }
 
 //returns the median of the input
