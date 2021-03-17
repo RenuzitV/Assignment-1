@@ -4,39 +4,53 @@
 
 using namespace std;
 
-typedef int ti;
+//main input size
 const int N = 5e4 + 5;
-ti x[N], y[N], n = 1;
+
+//main input variables
+int x[N], y[N], n = 1;
+
+//variables for each quesinton
 double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
 
-void sort(ti* x, ti* y) {
-	ti* mid = x;
+//quicksort algorithm
+void sort(int* x, int* y) {
+	int* mid = x; //choose pivot as first element
 	for (int* i = x + 1; i != y; ++i) {
-		if (*mid > *i) {
-			swap(*mid, *i);
-			++mid;
+		//if pivot is bigger than an element to the right, swap it to the left of pivot
+		//ex : 1 5[pivot] 6 7 2[i] 9 -> 1 2 5[pivot] 7 6[i] 9 
+		if (*mid > *i) { 
+			swap(*mid, *i); 
+			++mid; //go to the next index
 			swap(*mid, *i);
 		}
 	}
 	if (mid - x > 1){
-		sort(x, mid);
+		sort(x, mid); //if the left side of the pivot has more than 1 element, sort it
 	}
 	if (y - mid > 1) {
-		sort(mid + 1, y);
+		sort(mid + 1, y); //if the right side of the pivot has more than 1 element, sort it
 	}
 }
 
+
+//basic input function
 void input() {
+	//scans the first line and ignore it
 	scanf_s("%*[^\n]s%*c");
+
+	//while there is still input, read it
 	while (scanf_s("%d,%d", &x[n], &y[n]) != EOF) ++n; 
 	--n;
+
+	//sort the input
 	sort(x + 1, x + n + 1);
 	sort(y + 1, y + n + 1);
 }
 
-double mean(ti *x, int n) {
-
-	return 0;
+//returns the median of the input
+int mean(int *x, int n) {
+	return x[n / 2];
 }
 
 int main(){
