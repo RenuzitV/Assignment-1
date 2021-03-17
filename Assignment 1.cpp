@@ -8,7 +8,7 @@ typedef int ti;
 const int N = 5e4 + 5;
 ti x[N], y[N], n = 1;
 double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
-
+// khanh dang iu
 void sort(ti* x, ti* y) {
 	ti* mid = x;
 	for (int* i = x + 1; i != y; ++i) {
