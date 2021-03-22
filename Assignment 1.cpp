@@ -102,20 +102,13 @@ double skew(int x[], double sd, double m, int n) {
 
 double kurt(int x[], double sd, double m, int n) {
 	double res = 0;
-	int nn = n / 2;
-	for (int i = 1; i <= nn; ++i) {
-		//qudis a macro for quad function aka f(x) = x^4
-		//since the input is sorted, we do two operations at a time : getting a negative x[i] - m and add with a positive x[n-i+1] - m
-		//this prevents overflowing of variable res
-		res += qud((double)x[i] - m) + qud((double)x[n - i + 1] - m);
+	double qsd = qud(sd);
+	for (int i = 1; i <= n; ++i) {
+		//qud is a macro for quad function aka f(x) = x^4
+		//we divide the each qud() by n and qsd to minimize overflowing
+		res += qud((double)x[i] - m) / ((long long)n) / qsd;
 	}
-
-	//if n is odd, add the last middle number from the input
-	if (n & 1) {
-		res += qud(x[n / 2 + 1] - m);
-	}
-
-	return res / ((long long)n) / qud(sd) - 3;
+	return res - 3;
 }
 
 int main(int argc, const char* argv[]){
