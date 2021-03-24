@@ -57,28 +57,27 @@ void process() {
 	sort(y + 1, y + 1 + n);
 }
 
-//returns the median of the input, which is the value at the middle of a non-decreasing set
+//returns the average number of the input
 double mean(int *x, int n) {
 	double res = 0;
 	for (int i = 1; i <= n; ++i) {
 		res += 1.0*x[i]/n;
 	}
 	return res;
-	return x[n / 2];
 }
 
 //calculates variance based on a set of input
-double var(int x[], int n, double m) {
-	double res = 0;
-	for (int i = 1; i <= n; ++i) {
-		res += sqr(x[i] - m);
+double calVariance(int* a, int n, double mean) {
+	double sum = 0;
+	for (int i = 1; i <= n; i++) {
+		sum += sqr(a[i] - mean);
 	}
-	return res / n;
+	return sum / ((double)n - 1);
 }
 
-//calculates standard variance using variance
-double stdvar(double var, int n) {
-	return sqrt(var);
+//calculates std deviation via variance
+double calStandardDeviation(double variance) {
+	return sqrt(variance);
 }
 
 //calculates skew of a set
@@ -111,6 +110,20 @@ double kurt(int x[], double sd, double m, int n) {
 	return res - 3;
 }
 
+//calculates covariance from two sets of data
+double calCovariance(int x[], int y[], int n, double meanX, double meanY) {
+	double sum = 0;
+	for (int i = 1, nn = n / 2; i <= nn; i++) {
+		sum += (x[i] - meanX) * (y[i] - meanY);
+		sum += (x[n - i + 1] - meanX) * (y[n - i + 1] - meanY);
+	}
+	return sum / ((double)n - 1);
+}
+
+//calculates pearson's correlation coefficient r using covariance function
+double pearson(double cov, double stdevx, double stdevy) {
+	return cov / stdevx / stdevy;
+}
 int main(int argc, const char* argv[]){
 	/*
 	if (argc != 2) {
@@ -123,26 +136,25 @@ int main(int argc, const char* argv[]){
 	input(argv[1], &n);
 	*/
 	if (argc == 2) {
-		input("argv[1]", &n);
+		input(argv[1], &n);
 	}
 	else input("data1.csv", &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
 	double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
 
-
 	//processes the input
-	process();
+	//process();
 	
 	//calculates the function and puts them in their respective variable
 	meanx = mean(x, n);
 	meany = mean(y, n);
 
-	varx = var(x, n, meanx);
-	vary = var(y, n, meany);
+	varx = calVariance(x, n, meanx);
+	vary = calVariance(y, n, meany);
 
-	stdevx = stdvar(varx, n);
-	stdevy = stdvar(vary, n);
+	stdevx = calStandardDeviation(varx);
+	stdevy = calStandardDeviation(vary);
 
 	skewx = skew(x, stdevx, meanx, n);
 	skewy = skew(y, stdevy, meany, n);
@@ -150,15 +162,21 @@ int main(int argc, const char* argv[]){
 	kurtx = kurt(x, stdevx, meanx, n);
 	kurty = kurt(y, stdevy, meany, n);
 
+	cov = calCovariance(x, y, n, meanx, meany);
+
+	r = pearson(cov, stdevx, stdevy);
+
 	//sets precision to 6 digits after decimal place
 	cout.precision(6);
 	cout << fixed;
 
 	//print answers
-	cout << meanx << ' ' << meany << endl;
-	cout << varx << ' ' << vary << endl;
-	cout << stdevx << ' ' << stdevy << endl;
-	cout << skewx << ' ' << skewy << endl;
-	cout << kurtx << ' ' << kurty << endl;
+	cout << "mean : " << meanx << ' ' << meany << endl;
+	cout << "variance : " << varx << ' ' << vary << endl;
+	cout << "standard deviation : " << stdevx << ' ' << stdevy << endl;
+	cout << "skew : " << skewx << ' ' << skewy << endl;
+	cout << "kurt : " << kurtx << ' ' << kurty << endl;
+	cout << "Covariance : " << cov << endl;
+	cout << "pearson : " << r << endl;
 	return 0;
 }
