@@ -42,19 +42,16 @@ void quicksort(int* a, int* b) {
 int mode(int* a, int size) {
     int max_count = 0, most_freq = a[0], i = 0;
     while (i < size - 1) {
-        for (int j = i + 1; j < size; j++) {
-            if (a[i] != a[j] && j - i > max_count) {
-                max_count = j - i;
-                most_freq = a[i];
-                i = j;
-                break;
-            }
-            else if (j == size - 1 && a[i] == a[j] && j - i + 1 > max_count) {
-                max_count = j - i + 1;
-                most_freq = a[i];
-                i = j;
-            }
+        int cur_count = 1;
+        while (i + 1 < size && a[i] == a[i + 1]) {
+            cur_count++;
+            i++;
         }
+        if (max_count < cur_count) {
+            max_count = cur_count;
+            most_freq = a[i];
+        }
+        else i++;
     }
     return most_freq;
 }
