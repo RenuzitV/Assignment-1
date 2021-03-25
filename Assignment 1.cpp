@@ -40,24 +40,19 @@ void quicksort(int* a, int* b) {
 
 // function to return the most frequent element
 int mode(int* a, int size) {
-    int max_count = 0, most_freq = a[0];
-    for (int i = 0; i < size - 1; ) {
+    int max_count = 0, most_freq = a[0], i = 0;
+    while (i < size - 1) {
         for (int j = i + 1; j < size; j++) {
-            if (a[i] != a[j]) {
-                if (j - i > max_count) {
-                    max_count = j - i;
-                    most_freq = a[i];
-                }
+            if (a[i] != a[j] && j - i > max_count) {
+                max_count = j - i;
+                most_freq = a[i];
                 i = j;
                 break;
             }
-            else if (a[i] == a[j] && j == size - 1) {
-                if ((j - i + 1) > max_count) {
-                    max_count = j - i + 1;
-                    most_freq = a[i];
-                }
+            else if (a[i] == a[j] && j == size - 1 && j - i + 1 > max_count) {
+                max_count = j - i + 1;
+                most_freq = a[i];
                 i = j;
-                break;
             }
         }
     }
