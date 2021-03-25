@@ -49,7 +49,7 @@ int mode(int* a, int size) {
                 i = j;
                 break;
             }
-            else if (a[i] == a[j] && j == size - 1 && j - i + 1 > max_count) {
+            else if (j == size - 1 && a[i] == a[j] && j - i + 1 > max_count) {
                 max_count = j - i + 1;
                 most_freq = a[i];
                 i = j;
