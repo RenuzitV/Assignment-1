@@ -11,7 +11,7 @@ using namespace std;
 const int N = (int)5e4 + 5;
 
 //main input variables
-int x[N], y[N], n = 1;
+int *x = 0, *y = 0, n;
 
 //quicksort algorithm
 void sort(int* x, int* y) {
@@ -33,8 +33,27 @@ void sort(int* x, int* y) {
 	}
 }
 
+void reloc(int** x, int** y, int nn) {
+	if (!*x || !*y) {
+		*x = (int*)malloc(sizeof(int) * nn);
+		*y = (int*)malloc(sizeof(int) * nn);
+		if (!*x || !*y) {
+			cerr << "cannot allocate memory";
+			exit(-1);
+		}
+	}
+	int* tx = (int*)realloc(*x, sizeof(int) * nn), * ty = (int*)realloc(*y, sizeof(int) * nn);
+
+	if (!tx || !ty) {
+		cerr << "cannot allocate memory";
+		exit(-1);
+	}
+	else *x = tx, *y = ty;
+}
+
 //basic input function, X and Y is read in 1-indexed from a command line-argument file 
-void input(const char s[], int *n) {
+void input(const char s[], int **x, int **y, int *n) {
+	*n = 1;
 	//opens the file and transfer it to the standard input
 	FILE* F;
 	freopen_s(&F, s, "r", stdin);
@@ -46,9 +65,22 @@ void input(const char s[], int *n) {
 	//scans the first line and ignore it
 	scanf_s("%*[^\n]s%*c");
 
+	int nn = 4; // current array size
+	reloc(&*x, &*y, nn); //sets x and y to size nn
+
 	//while there is still input, read it
-	while (scanf_s("%d,%d", &x[*n], &y[*n]) != EOF) ++*n;
+	while (scanf_s("%d,%d", &((*x)[*n]), &((*y)[*n])) != EOF) {
+		++*n;
+		if (*n == nn - 1) {
+			nn *= 4; //4 is arbitrary, can adjust to any number > 1
+			//the idea is to increase the size of the array by a dramatic ammount, so we dont have to reallocate per input
+			//for inputs up to 6e4, we only need to reallocate 8 times
+			//the number of times we need to reallocate can be computed as log(size, multiplier) aka log(size) / log(multiplier)
+			reloc(&*x, &*y, nn);
+		}
+	}
 	--*n; //sets n to the correct number of items
+	reloc(&*x, &*y, *n + 5);
 }
 
 void process() {
@@ -61,9 +93,9 @@ void process() {
 double mean(int *x, int n) {
 	double res = 0;
 	for (int i = 1; i <= n; ++i) {
-		res += 1.0*x[i]/n;
+		res += x[i];
 	}
-	return res;
+	return res / n;
 }
 
 //calculates variance based on a set of input
@@ -83,17 +115,9 @@ double calStandardDeviation(double variance) {
 //calculates skew of a set
 double skew(int x[], double sd, double m, int n) {
 	double res = 0;
-	int nn = n / 2;
-	for (int i = 1; i <= nn; ++i) {
+	for (int i = 1; i <= n; ++i) {
 		//cub is a macro for cube function aka f(x) = x^3
-		//since the input is sorted, we do two operations at a time : getting a negative x[i] - m and add with a positive x[n-i+1] - m
-		//this prevents overflowing of variable res
-		res += cub(x[i] - m) + cub(x[n - i + 1] - m);
-	}
-
-	//if n is odd, add the last middle number from the input
-	if (n & 1) {
-		res += cub(x[n / 2 + 1] - m);
+		res += cub(x[i] - m);
 	}
 
 	return res / n / cub(sd);
@@ -104,7 +128,7 @@ double kurt(int x[], double sd, double m, int n) {
 	double qsd = qud(sd);
 	for (int i = 1; i <= n; ++i) {
 		//qud is a macro for quad function aka f(x) = x^4
-		//we divide the each qud() by n and qsd to minimize overflowing
+		//we divide each qud() by n and qsd to minimize overflowing
 		res += qud((double)x[i] - m) / ((long long)n) / qsd;
 	}
 	return res - 3;
@@ -136,9 +160,9 @@ int main(int argc, const char* argv[]){
 	input(argv[1], &n);
 	*/
 	if (argc == 2) {
-		input(argv[1], &n);
+		input(argv[1], &x, &y, &n);
 	}
-	else input("data1.csv", &n);
+	else input("data1.csv", &x, &y, &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
 	double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
