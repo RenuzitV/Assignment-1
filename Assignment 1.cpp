@@ -11,7 +11,8 @@ using namespace std;
 const int N = (int)5e4 + 5;
 
 //main input variables
-int *x = 0, *y = 0, n;
+//*x and *y are pointers to int aka arrays
+int *x, *y, n;
 
 //quicksort algorithm
 void sort(int* x, int* y) {
@@ -25,6 +26,7 @@ void sort(int* x, int* y) {
 			swap(*mid, *i);
 		}
 	}
+
 	if (mid - x > 1){
 		sort(x, mid); //if the left side of the pivot has more than 1 element, sort it
 	}
@@ -33,7 +35,13 @@ void sort(int* x, int* y) {
 	}
 }
 
+//reallocates x and y to some size nn, error-proof as far as testing goes
 void reloc(int** x, int** y, int nn) {
+	if (nn < 1) {
+		cerr << "cannot allocate memory";
+		exit(-1);
+	}
+	//if either x or y is uninitialized, call malloc instead of realloc
 	if (!*x || !*y) {
 		*x = (int*)malloc(sizeof(int) * nn);
 		*y = (int*)malloc(sizeof(int) * nn);
@@ -41,17 +49,21 @@ void reloc(int** x, int** y, int nn) {
 			cerr << "cannot allocate memory";
 			exit(-1);
 		}
+		return;
 	}
+
+	//try to realloc x and y to tx and ty of size nn
 	int* tx = (int*)realloc(*x, sizeof(int) * nn), * ty = (int*)realloc(*y, sizeof(int) * nn);
 
+	//if either tx or ty cannot be allocated
 	if (!tx || !ty) {
 		cerr << "cannot allocate memory";
 		exit(-1);
 	}
-	else *x = tx, *y = ty;
+	else *x = tx, *y = ty; //assigns pointer x and y to tx and ty
 }
 
-//basic input function, X and Y is read in 1-indexed from a command line-argument file 
+//main input function, X and Y is read in 1-indexed from a file
 void input(const char s[], int **x, int **y, int *n) {
 	*n = 1;
 	//opens the file and transfer it to the standard input
@@ -69,27 +81,35 @@ void input(const char s[], int **x, int **y, int *n) {
 	reloc(&*x, &*y, nn); //sets x and y to size nn
 
 	//while there is still input, read it
-	while (scanf_s("%d,%d", &((*x)[*n]), &((*y)[*n])) != EOF) {
+	//bit of explaination : 
+	//**x : pointer to array x
+	//*x : array x
+	//*x[*n] : element number *n in array x
+	// &((*x)[*n]) : pointer to the former variable
+	//we add in a bunch of parentheses to avoid compiler confusion, such as &*x just means x, and x[*n] is not something we want to access
+	while (scanf_s("%d,%d", &((*x)[*n]), &((*y)[*n])) != EOF) { 
 		++*n;
 		if (*n == nn - 1) {
-			nn *= 4; //4 is arbitrary, can adjust to any number > 1
+			nn *= 2; //2 is arbitrary, can adjust to any number > 1
 			//the idea is to increase the size of the array by a dramatic ammount, so we dont have to reallocate per input
 			//for inputs up to 6e4, we only need to reallocate 8 times
-			//the number of times we need to reallocate can be computed as log(size, multiplier) aka log(size) / log(multiplier)
+			//the number of times we need to reallocate can be computed as log(size, multiplier)
 			reloc(&*x, &*y, nn);
 		}
 	}
 	--*n; //sets n to the correct number of items
+	//reallocates x and y to the correct size of items + 5 for safety measures
 	reloc(&*x, &*y, *n + 5);
 }
 
+//processes data in some sort of way
 void process() {
 	//sorts x and y in non-decreasing order
 	sort(x + 1, x + 1 + n);
 	sort(y + 1, y + 1 + n);
 }
 
-//returns the average number of the input
+//returns the average number of the input aka arithmetic mean
 double mean(int *x, int n) {
 	double res = 0;
 	for (int i = 1; i <= n; ++i) {
@@ -98,7 +118,7 @@ double mean(int *x, int n) {
 	return res / n;
 }
 
-//calculates variance based on a set of input
+//calculates variance from a set of input
 double calVariance(int* a, int n, double mean) {
 	double sum = 0;
 	for (int i = 1; i <= n; i++) {
@@ -107,12 +127,12 @@ double calVariance(int* a, int n, double mean) {
 	return sum / ((double)n - 1);
 }
 
-//calculates std deviation via variance
+//calculates stdardard deviation via variance
 double calStandardDeviation(double variance) {
 	return sqrt(variance);
 }
 
-//calculates skew of a set
+//calculates skew of a data set
 double skew(int x[], double sd, double m, int n) {
 	double res = 0;
 	for (int i = 1; i <= n; ++i) {
@@ -123,18 +143,19 @@ double skew(int x[], double sd, double m, int n) {
 	return res / n / cub(sd);
 }
 
+//calculates kurtosis from a set, using precomputed mean and standard deviation
 double kurt(int x[], double sd, double m, int n) {
 	double res = 0;
 	double qsd = qud(sd);
 	for (int i = 1; i <= n; ++i) {
 		//qud is a macro for quad function aka f(x) = x^4
-		//we divide each qud() by n and qsd to minimize overflowing
+		//we divide each qud() by n and qsd to avoid overflowing
 		res += qud((double)x[i] - m) / ((long long)n) / qsd;
 	}
 	return res - 3;
 }
 
-//calculates covariance from two sets of data
+//calculates covariance from two sets of data, using meanX and meanY as precomputed values
 double calCovariance(int x[], int y[], int n, double meanX, double meanY) {
 	double sum = 0;
 	for (int i = 1, nn = n / 2; i <= nn; i++) {
@@ -144,21 +165,24 @@ double calCovariance(int x[], int y[], int n, double meanX, double meanY) {
 	return sum / ((double)n - 1);
 }
 
-//calculates pearson's correlation coefficient r using covariance function
+//calculates pearson's correlation coefficient r using covariance and standard deviation function
 double pearson(double cov, double stdevx, double stdevy) {
 	return cov / stdevx / stdevy;
 }
+
+
+//********************************************			main function			********************************************
 int main(int argc, const char* argv[]){
+	//gets cmd line argument and runs it
 	/*
 	if (argc != 2) {
 		cerr << "wrong argument";
 		return -1;
 	}
-
-	//main input function
-	//input("data1.csv", &n);
 	input(argv[1], &n);
 	*/
+
+	//for testing purposes if no cmd line arguments are given, use data1.csv as default data file
 	if (argc == 2) {
 		input(argv[1], &x, &y, &n);
 	}
@@ -168,6 +192,7 @@ int main(int argc, const char* argv[]){
 	double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
 
 	//processes the input
+	//commented out because order matters for some functions
 	//process();
 	
 	//calculates the function and puts them in their respective variable
