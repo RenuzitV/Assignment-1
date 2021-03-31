@@ -7,9 +7,6 @@
 
 using namespace std;
 
-//main input size
-const int N = (int)5e4 + 5;
-
 //main input variables
 //*x and *y are pointers to int aka arrays
 int *x, *y, n;
@@ -158,9 +155,8 @@ double kurt(int x[], double sd, double m, int n) {
 //calculates covariance from two sets of data, using meanX and meanY as precomputed values
 double calCovariance(int x[], int y[], int n, double meanX, double meanY) {
 	double sum = 0;
-	for (int i = 1, nn = n / 2; i <= nn; i++) {
+	for (int i = 1; i <= n; i++) {
 		sum += (x[i] - meanX) * (y[i] - meanY);
-		sum += (x[n - i + 1] - meanX) * (y[n - i + 1] - meanY);
 	}
 	return sum / ((double)n - 1);
 }
