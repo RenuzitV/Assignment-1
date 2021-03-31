@@ -115,13 +115,35 @@ double mean(int *x, int n) {
 	return res / n;
 }
 
+//Function to find the Median of the array
+double findMedian(int arr[], int n) {
+	if (n % 2 == 0) {
+		return ((double)arr[(n - 1) / 2] + arr[n / 2]) / 2;
+	}
+	else return arr[n / 2];
+}
+
+//Function to find the Mean Absolute Deviation 
+double findMAD(int arr[], int n, double m) {
+	double sum = 0;
+	for (int i = 1; i <= n; i++) {
+		sum += fabs((double)arr[i] - m);
+	}
+	return sum / n;
+}
+
+//Function to find First Quartile accounting median
+double findQ1(int arr[], int n) {
+	return findMedian(arr, n/2);
+}
+
 //calculates variance from a set of input
 double calVariance(int* a, int n, double mean) {
 	double sum = 0;
 	for (int i = 1; i <= n; i++) {
 		sum += sqr(a[i] - mean);
 	}
-	return sum / ((double)n - 1);
+	return sum / n;
 }
 
 //calculates stdardard deviation via variance
@@ -158,7 +180,7 @@ double calCovariance(int x[], int y[], int n, double meanX, double meanY) {
 	for (int i = 1; i <= n; i++) {
 		sum += (x[i] - meanX) * (y[i] - meanY);
 	}
-	return sum / ((double)n - 1);
+	return sum / n;
 }
 
 //calculates pearson's correlation coefficient r using covariance and standard deviation function
@@ -185,12 +207,8 @@ int main(int argc, const char* argv[]){
 	else input("data1.csv", &x, &y, &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
-	double meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
+	double medx, medy, meanx, meany, modex, modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r, a, b;
 
-	//processes the input
-	//commented out because order matters for some functions
-	//process();
-	
 	//calculates the function and puts them in their respective variable
 	meanx = mean(x, n);
 	meany = mean(y, n);
@@ -200,6 +218,12 @@ int main(int argc, const char* argv[]){
 
 	stdevx = calStandardDeviation(varx);
 	stdevy = calStandardDeviation(vary);
+
+	madx = findMAD(x, n, meanx);
+	mady = findMAD(y, n, meany);
+
+	q1x = findQ1(x, n);
+	q1y = findQ1(y, n);
 
 	skewx = skew(x, stdevx, meanx, n);
 	skewy = skew(y, stdevy, meany, n);
@@ -211,17 +235,25 @@ int main(int argc, const char* argv[]){
 
 	r = pearson(cov, stdevx, stdevy);
 
+	//processes the input
+	process();
+	medx = findMedian(x, n);
+	medy = findMedian(y, n);
+
 	//sets precision to 6 digits after decimal place
 	cout.precision(6);
 	cout << fixed;
 
 	//print answers
-	cout << "mean : " << meanx << ' ' << meany << endl;
-	cout << "variance : " << varx << ' ' << vary << endl;
-	cout << "standard deviation : " << stdevx << ' ' << stdevy << endl;
-	cout << "skew : " << skewx << ' ' << skewy << endl;
-	cout << "kurt : " << kurtx << ' ' << kurty << endl;
-	cout << "Covariance : " << cov << endl;
-	cout << "pearson : " << r << endl;
+	cout << "median_x = " << medx << " - median_y = " << medy << endl;
+	//cout << "mode_x = " << modex << " - mode_y = " << modey << endl;
+	cout << "var_x = " << varx << " - var_y = " << vary << endl;
+	cout << "stdev_x = " << stdevx << " - stdev_y = " << stdevy << endl;
+	cout << "mad_x = " << madx << " - mad_y = " << mady << endl;
+	cout << "q1_x = " << q1x << " - q1_y = " << q1y << endl;
+	cout << "skew_x = " << skewx << " - skew_y = " << skewy << endl;
+	cout << "kurt_x = " << kurtx << " - kurt_y = " << kurty << endl;
+	cout << "cov(x_y) = " << cov << endl;
+	cout << "r(x_y) = " << r << endl;
 	return 0;
 }
