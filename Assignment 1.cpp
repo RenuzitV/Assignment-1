@@ -236,20 +236,17 @@ void linear_regression(double mean_a, double mean_b, double stdev_a, double stde
 }
 //********************************************			main function			********************************************
 int main(int argc, const char* argv[]){
-	//gets cmd line argument and runs it
-	/*
 	if (argc != 2) {
 		cerr << "wrong argument";
 		return -1;
 	}
-	input(argv[1], &n);
-	*/
+	input(argv[1], &x, &y, &n);
 
-	//for testing purposes if no cmd line arguments are given, use data1.csv as default data file
-	if (argc == 2) {
-		input(argv[1], &x, &y, &n);
-	}
-	else input("data1.csv", &x, &y, &n);
+	////for testing purposes, if no cmd line arguments are given, use data1.csv as default data file
+	//if (argc == 2) {
+	//	input(argv[1], &x, &y, &n);
+	//}
+	//else input("data1.csv", &x, &y, &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
 	double medx, medy, meanx, meany, *modex, *modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r;
