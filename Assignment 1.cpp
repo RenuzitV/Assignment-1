@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
+#include <chrono>
 #define sqr(x) ((x)*(x))
 #define cub(x) ((x)*sqr(x))
 #define qud(x) (sqr(x)*sqr(x))
@@ -40,16 +41,6 @@ void reloc(double** x, double** y, int nn) {
 		cerr << "cannot allocate memory";
 		exit(-1);
 	}
-	//if either x or y is uninitialized, call malloc instead of realloc
-	if (!*x || !*y) {
-		*x = (double*)malloc(sizeof(double) * nn);
-		*y = (double*)malloc(sizeof(double) * nn);
-		if (!*x || !*y) {
-			cerr << "cannot allocate memory";
-			exit(-1);
-		}
-		return;
-	}
 
 	//try to realloc x and y to tx and ty of size nn
 	double* tx = (double*)realloc(*x, sizeof(double) * nn), * ty = (double*)realloc(*y, sizeof(double) * nn);
@@ -62,35 +53,38 @@ void reloc(double** x, double** y, int nn) {
 	else *x = tx, *y = ty; //assigns pointer x and y to tx and ty
 }
 
-//main input function, X and Y is read in 1-indexed from a file
+//main input function, x and y is read in 0-indexed from a file
 void input(const char s[], double **x, double **y, int *n) {
 	//opens the file and transfer it to the standard input
 	FILE* F;
+	//ios::sync_with_stdio(false);
+	//cin.tie(NULL);
 	freopen_s(&F, s, "r", stdin);
 	if (!F) {
 		cout << "cant open file";
 		exit(-1);
 	}
 
-	//scans the first line and ignore it
-	scanf_s("%*[^\n]s%*c");
-
 	int nn = 4; // current array size
-	reloc(&*x, &*y, nn); //sets x and y to size nn
+	reloc(x, y, nn); //sets x and y to size nn
 
 	//while there is still input, read it
+	//we do not care if the first line is readible or not, because we only care about inputs of format "%lf,%lf"
 	//bit of explaination : 
 	//**x : pointer to array x
 	//*x : array x
 	//*x[*n] : element number *n in array x
 	// &((*x)[*n]) : pointer to the former variable
 	//we add in a bunch of parentheses to avoid compiler confusion, such as &*x just means x, and x[*n] is not something we want to access
-	while (scanf_s("%lf,%lf", &((*x)[*n]), &((*y)[*n])) != EOF) { 
+	string ss;
+	while (getline(cin, ss)){
+		//if input is not of format "%lf,%lf", continue
+		if (sscanf_s(ss.c_str(), "%lf,%lf", &((*x)[*n]), &((*y)[*n])) != 2) continue;
 		++*n;
 		if (*n == nn) {
 			nn *= 2; //2 is arbitrary, can adjust to any number > 1
 			//the idea is to increase the size of the array by a dramatic ammount, so we dont have to reallocate per input
-			//for inputs up to 6e4, we only need to reallocate 8 times
+			//for inputs up to 6e4, we only need to reallocate log2(6e4) =  times
 			//the number of times we need to reallocate can be computed as log(size, multiplier)
 			reloc(x, y, nn);
 		}
@@ -106,7 +100,7 @@ void process() {
 	sort(y, y+n);
 }
 
-//returns the average number of the input aka arithmetic mean
+//returns the average number of an input aka arithmetic mean
 double mean(double *x, int n) {
 	double res = 0;
 	for (int i = 0; i < n; ++i) {
@@ -115,44 +109,29 @@ double mean(double *x, int n) {
 	return res / n;
 }
 
-// function to return the most frequent element(s)
-void mode(double* a, int size, int *nz, double **res) {
+// function to return the most frequent element(s) to an array res, with size nres
+void mode(double* a, int size, int *nres, double **res) {
 	if (size < 1) return;
 	*res = (double*)malloc(sizeof(double) * size);
 	if (!*res) return;
-	int max_count = 0, i = 1, pre = 0, nres = 0;
-	while (i < size) {
+	int max_count = 0, pre = 0;
+	*nres = 0;
+	for (int i = 1; i < size; ++i) {
 		if (a[i] != a[i - 1]) {
 			int cur_count = i - pre;
-			if (max_count <= cur_count) {
-				if (max_count == cur_count) {
-					if (nres < size) (*res)[nres++] = a[pre];
-				}
-				else {
-					max_count = cur_count;
-					(*res)[0] = a[pre];
-					nres = 1;
-				}
+			if (max_count == cur_count) {
+				 if (*nres < size) (*res)[(*nres)++] = a[pre];
+			}
+			else if (max_count < cur_count){
+				max_count = cur_count;
+				(*res)[0] = a[pre];
+				*nres = 1;
 			}
 			pre = i;
 		}
-		i++;
 	}
-	//one last check at i = size
-	int cur_count = i - pre;
-	if (max_count <= cur_count) {
-		if (max_count == cur_count) {
-			if (nres < size) (*res)[nres++] = a[pre];
-		}
-		else {
-			max_count = cur_count;
-			(*res)[0] = a[pre];
-			nres = 1;
-		}
-	}
-	* nz = nres;
-	double *t = (double*)realloc(*res, sizeof(double) * nres);
-	if (t) *res = t;
+	double *temp = (double*)realloc(*res, sizeof(double) * *nres);
+	if (temp) *res = temp;
 }
 
 //Function to find the Median of the array
@@ -163,7 +142,7 @@ double findMedian(double arr[], int n) {
 	else return arr[n / 2];
 }
 
-//Function to find the Mean Absolute Deviation 
+//Function to find the Mean Absolute Deviation from a set, using precomputed mean
 double findMAD(double arr[], int n, double m) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
@@ -172,12 +151,12 @@ double findMAD(double arr[], int n, double m) {
 	return sum / ((double) n - 1);
 }
 
-//Function to find First Quartile accounting median
+//Function to find First Quartile from a set using precomputed median
 double findQ1(double arr[], int n) {
 	return findMedian(arr, n/2);
 }
 
-//calculates variance from a set of input
+//calculates variance from a set of input using precomputed median
 double calVariance(double* a, int n, double mean) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
@@ -191,14 +170,13 @@ double calStandardDeviation(double variance) {
 	return sqrt(variance);
 }
 
-//calculates skew of a data set
+//calculates skew of a data set using precomputed median and standard deviation
 double skew(double x[], double sd, double m, int n) {
 	double res = 0;
 	for (int i = 0; i < n; ++i) {
 		//cub is a macro for cube function aka f(x) = x^3
 		res += cub(x[i] - m);
 	}
-
 	return res / ((double)n - 1) / cub(sd);
 }
 
@@ -234,8 +212,11 @@ void linear_regression(double mean_a, double mean_b, double stdev_a, double stde
 	double intercept = mean_b - slope * mean_a;
 	cout << "y = " << slope << "x + " << intercept << "\n";
 }
+
 //********************************************			main function			********************************************
 int main(int argc, const char* argv[]){
+	//testing code for time ran
+	//auto start = chrono::high_resolution_clock::now();
 	if (argc != 2) {
 		cerr << "wrong argument";
 		return -1;
@@ -250,6 +231,10 @@ int main(int argc, const char* argv[]){
 
 	//variables for each quesinton, we store each function's answer in here for later use
 	double medx, medy, meanx, meany, *modex, *modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r;
+	
+	//initialises the variables
+	medx = medy = meanx = meany = varx = vary = stdevx = stdevy = madx = mady = q1x = q1y = skewx = skewy = kurtx = kurty = cov = r = 0;
+	modex = modey = (double*)malloc(sizeof(double));
 
 	//calculates the function and puts them in their respective variable
 	meanx = mean(x, n);
@@ -279,7 +264,7 @@ int main(int argc, const char* argv[]){
 
 	medx = findMedian(x, n);
 	medy = findMedian(y, n);
-
+	
 	q1x = findQ1(x, n);
 	q1y = findQ1(y, n);
 
@@ -311,5 +296,8 @@ int main(int argc, const char* argv[]){
 	cout << "cov(x_y) = " << cov << endl;
 	cout << "r(x_y) = " << r << endl;
 	linear_regression(meanx, meany, stdevx, stdevy, r);
+	//testing code for time ran
+	//auto stop = chrono::high_resolution_clock::now();
+	//clog << "time ran : " << chrono::duration_cast<chrono::milliseconds> (stop - start).count() << " milliseconds";
 	return 0;
 }
