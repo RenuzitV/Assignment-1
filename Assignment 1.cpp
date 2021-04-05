@@ -117,8 +117,14 @@ double mean(double *x, int n) {
 //only works on sorted array
 void mode(double* a, int size, int *nres, double **res) {
 	if (size < 1) return;
+	//init res to have size elements, we will reduce it later
 	*res = (double*)malloc(sizeof(double) * size);
+	//check if malloc is successful
 	if (!*res) return;
+	//max_count is the number of occurences of the mode(s)
+	//the idea is to find max(j) such that a[j] == a[pre], and checks if j-pre > max_count.
+	//if equals, we have a another mode, if greater, it is the only mode currenly.
+	//after evaluating, we assign pre = j and continue to the rest of the array
 	int max_count = 0, pre = 0;
 	*nres = 0;
 	for (int i = 1; i < size; ++i) {
@@ -135,6 +141,11 @@ void mode(double* a, int size, int *nres, double **res) {
 			pre = i;
 		}
 	}
+
+	//if all elements are mode, there is no mode
+	if (*nres * max_count == size) *nres = 0;
+
+	//resize res to the number of mode(s) we've found and do error checking
 	double *temp = (double*)realloc(*res, sizeof(double) * *nres);
 	if (temp) *res = temp;
 }
