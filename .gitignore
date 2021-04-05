@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /data1 - Copy.xlsx
 *.csv
+*.xlsx

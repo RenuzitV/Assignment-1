@@ -144,6 +144,7 @@
   <ItemGroup>
     <None Include="data1.csv" />
     <None Include="data2.csv" />
+    <None Include="data3.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

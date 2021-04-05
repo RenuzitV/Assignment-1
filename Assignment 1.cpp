@@ -79,7 +79,11 @@ void input(const char s[], double **x, double **y, int *n) {
 	string ss;
 	while (getline(cin, ss)){
 		//if input is not of format "%lf,%lf", continue
-		if (sscanf_s(ss.c_str(), "%lf,%lf", &((*x)[*n]), &((*y)[*n])) != 2) continue;
+		//temp 
+		char temp[10] = "\0";
+		//gets and checks if the input line is correct
+		//temp is used to check for stray characters, if there is any the input line is corrupted and should not be used
+		if (sscanf_s(ss.c_str(), "%lf,%lf%9[^\n]s", &((*x)[*n]), &((*y)[*n]), temp, 9) != 2 || strlen(temp) > 0) continue;
 		++*n;
 		if (*n == nn) {
 			nn *= 2; //2 is arbitrary, can adjust to any number > 1
@@ -109,7 +113,8 @@ double mean(double *x, int n) {
 	return res / n;
 }
 
-// function to return the most frequent element(s) to an array res, with size nres
+//function to return the most frequent element(s) to an array res, with size nres
+//only works on sorted array
 void mode(double* a, int size, int *nres, double **res) {
 	if (size < 1) return;
 	*res = (double*)malloc(sizeof(double) * size);
@@ -135,9 +140,10 @@ void mode(double* a, int size, int *nres, double **res) {
 }
 
 //Function to find the Median of the array
+//only works on sorted array
 double findMedian(double arr[], int n) {
 	if (n % 2 == 0) {
-		return ((double)arr[(n - 1) / 2] + arr[n / 2]) / 2;
+		return (arr[(n - 1) / 2] + arr[n / 2]) / 2;
 	}
 	else return arr[n / 2];
 }
@@ -152,6 +158,7 @@ double findMAD(double arr[], int n, double m) {
 }
 
 //Function to find First Quartile from a set using precomputed median
+//only works on sorted array
 double findQ1(double arr[], int n) {
 	return findMedian(arr, n/2);
 }
@@ -187,7 +194,7 @@ double kurt(double x[], double sd, double m, int n) {
 	for (int i = 0; i < n; ++i) {
 		//qud is a macro for quad function aka f(x) = x^4
 		//we divide each qud() by n and qsd to avoid overflowing
-		res += qud((double)x[i] - m) / ((long long)n) / qsd;
+		res += qud(x[i] - m) / ((double)n) / qsd;
 	}
 	return res - 3;
 }
@@ -206,7 +213,7 @@ double pearson(double cov, double stdevx, double stdevy) {
 	return cov / stdevx / stdevy;
 }
 
-// fnction find and print out linear regression
+// function find and print linear regression of a dataset, using all precomputed values of an input
 void linear_regression(double mean_a, double mean_b, double stdev_a, double stdev_b, double cor_coeff) {
 	double slope = cor_coeff * stdev_b / stdev_a;
 	double intercept = mean_b - slope * mean_a;
@@ -234,7 +241,7 @@ int main(int argc, const char* argv[]){
 	
 	//initialises the variables
 	medx = medy = meanx = meany = varx = vary = stdevx = stdevy = madx = mady = q1x = q1y = skewx = skewy = kurtx = kurty = cov = r = 0;
-	modex = modey = (double*)malloc(sizeof(double));
+	modex = modey = NULL;
 
 	//calculates the function and puts them in their respective variable
 	meanx = mean(x, n);
@@ -259,7 +266,7 @@ int main(int argc, const char* argv[]){
 
 	r = pearson(cov, stdevx, stdevy);
 
-	//processes the input
+	//processes the input, this only sorts the array for now
 	process();
 
 	medx = findMedian(x, n);
@@ -268,12 +275,13 @@ int main(int argc, const char* argv[]){
 	q1x = findQ1(x, n);
 	q1y = findQ1(y, n);
 
+	//nmx and nmy are modex and modey's size
 	int nmx = 0, nmy = 0;
 	mode(x, n, &nmx, &modex);
 	mode(y, n, &nmy, &modey);
 
 	//sets precision to 6 digits after decimal place
-	cout.precision(6);
+	cout.precision(5);
 	cout << fixed;
 
 	//print answers

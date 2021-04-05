@@ -26,5 +26,8 @@
     <None Include="data2.csv">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="data3.csv">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
