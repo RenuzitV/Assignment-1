@@ -5,7 +5,7 @@
 #include <chrono>
 #define sqr(x) ((x)*(x))
 #define cub(x) ((x)*sqr(x))
-#define qud(x) (sqr(x)*sqr(x))
+#define qud(x) (sqr(sqr(x)))
 
 using namespace std;
 
@@ -194,7 +194,7 @@ double kurt(double x[], double sd, double m, int n) {
 	for (int i = 0; i < n; ++i) {
 		//qud is a macro for quad function aka f(x) = x^4
 		//we divide each qud() by n and qsd to avoid overflowing
-		res += qud(x[i] - m) / ((double)n) / qsd;
+		res += qud(x[i] - m) / ((double)n - 1) / qsd;
 	}
 	return res - 3;
 }
@@ -280,7 +280,7 @@ int main(int argc, const char* argv[]){
 	mode(x, n, &nmx, &modex);
 	mode(y, n, &nmy, &modey);
 
-	//sets precision to 6 digits after decimal place
+	//sets precision to 5 digits after decimal place
 	cout.precision(5);
 	cout << fixed;
 
@@ -290,7 +290,7 @@ int main(int argc, const char* argv[]){
 	for (int i = 0; i < nmx; ++i) {
 		cout << modex[i] << (i == nmx - 1 ? "" : ", ");
 	}
-	cout << "} - mode_y : {";
+	cout << "}\nmode_y : {";
 	for (int i = 0; i < nmy; ++i) {
 		cout << modey[i] << (i == nmy - 1 ? "" : ", ");
 	}
