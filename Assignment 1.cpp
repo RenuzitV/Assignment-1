@@ -18,7 +18,7 @@ int n;
 void sort(double* x, double* y) {
 	double* mid = x;   //choose pivot as first element
 
-	for (double* i = x + 1; i != y; ++i) {
+	for (double* i = x + 1; i < y; ++i) {
 		//if pivot is bigger than an element to the right, swap it to the left of pivot
 		//ex : 1 5[pivot] 6 7 2[i] 9 -> 1 2 5[pivot] 7 6[i] 9 
 		if (*mid > *i) {
@@ -131,8 +131,12 @@ void mode(double* a, int sa, double** res, int* sres) {
 	// pre is the position of the first element of the present value we consider
 	int max_count = 0, pre = 0;
 	*sres = 0;
-
-	for (int i = 1; i < sa; ++i) {
+	
+	//temp variable for this function only
+	a[sa] = INFINITY;
+	
+	// i <= sa is intentional, this does NOT produce any bugs since our array is always 5 elements bigger than its size
+	for (int i = 1; i <= sa; ++i) {
 		if (a[i] != a[i - 1]) {
 			int cur_count = i - pre;  // current count of occurences of the present value equals the distance between
 									  // current element and the first element of that value in the original array
@@ -174,7 +178,7 @@ double findMAD(double arr[], int n, double m) {
 	for (int i = 0; i < n; i++) {
 		sum += fabs(arr[i] - m);
 	}
-	return sum / ((double)n - 1);
+	return sum / ((double)n);
 }
 
 
@@ -312,7 +316,7 @@ int main(int argc, const char* argv[]) {
 	for (int i = 0; i < nmx; ++i) {
 		cout << modex[i] << (i == nmx - 1 ? "" : ", ");
 	}
-	cout << "}\nmode_y : {";
+	cout << "}\nmode_y = {";
 	for (int i = 0; i < nmy; ++i) {
 		cout << modey[i] << (i == nmy - 1 ? "" : ", ");
 	}
