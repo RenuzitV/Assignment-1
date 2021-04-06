@@ -131,10 +131,10 @@ void mode(double* a, int sa, double** res, int* sres) {
 	// pre is the position of the first element of the present value we consider
 	int max_count = 0, pre = 0;
 	*sres = 0;
-	
+
 	//temp variable for this function only
 	a[sa] = INFINITY;
-	
+
 	// i <= sa is intentional, this does NOT produce any bugs since our array is always 5 elements bigger than its size
 	for (int i = 1; i <= sa; ++i) {
 		if (a[i] != a[i - 1]) {
@@ -190,7 +190,7 @@ double findQ1(double arr[], int n) {
 
 
 //calculate variance from a set of input using precomputed median
-double calVariance(double* a, int n, double mean) {
+double variance(double* a, int n, double mean) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
 		sum += sqr(a[i] - mean);
@@ -200,7 +200,7 @@ double calVariance(double* a, int n, double mean) {
 
 
 //calculate stdardard deviation via variance
-double calStandardDeviation(double variance) {
+double StandardDeviation(double variance) {
 	return sqrt(variance);
 }
 
@@ -230,7 +230,7 @@ double kurt(double x[], double sd, double m, int n) {
 
 
 //calculate covariance from two sets of data, using meanX and meanY as precomputed values
-double calCovariance(double x[], double y[], int n, double meanX, double meanY) {
+double covariance(double x[], double y[], int n, double meanX, double meanY) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
 		sum += (x[i] - meanX) * (y[i] - meanY);
@@ -273,11 +273,11 @@ int main(int argc, const char* argv[]) {
 	meanx = mean(x, n);
 	meany = mean(y, n);
 
-	varx = calVariance(x, n, meanx);
-	vary = calVariance(y, n, meany);
+	varx = variance(x, n, meanx);
+	vary = variance(y, n, meany);
 
-	stdevx = calStandardDeviation(varx);
-	stdevy = calStandardDeviation(vary);
+	stdevx = StandardDeviation(varx);
+	stdevy = StandardDeviation(vary);
 
 	madx = findMAD(x, n, meanx);
 	mady = findMAD(y, n, meany);
@@ -288,7 +288,7 @@ int main(int argc, const char* argv[]) {
 	kurtx = kurt(x, stdevx, meanx, n);
 	kurty = kurt(y, stdevy, meany, n);
 
-	cov = calCovariance(x, y, n, meanx, meany);
+	cov = covariance(x, y, n, meanx, meany);
 
 	r = pearson(cov, stdevx, stdevy);
 
@@ -331,7 +331,7 @@ int main(int argc, const char* argv[]) {
 	cout << "r(x_y) = " << r << endl;
 	linear_regression(meanx, meany, stdevx, stdevy, r);
 
-	cout << "ASSIGNMENT 1 GROUP 22\n";
+	cout << "\nASSIGNMENT 1 GROUP 22\n";
 	cout << "s3878076, s3878076@rmit.edu.vn, Duy, Nguyen\n";
 	cout << "s3877707, s3877707@rmit.edu.vn, Khanh, Tran\n";
 	cout << "s3804803, s3804803@rmit.edu.vn, Ngan, Nguyen\n";
