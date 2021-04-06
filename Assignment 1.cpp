@@ -119,8 +119,7 @@ double mean(double* x, int n) {
 }
 
 
-// function to return the most frequent element(s) to an array res (the mode array) with size s_res
-// only works on sorted array
+// return the most frequent element(s) of an SORTED array a (size sa) to an array res (the mode array) (size s_res)
 void mode(double* a, int sa, double** res, int* sres) {
 	if (sa < 1) return;
 
@@ -135,8 +134,8 @@ void mode(double* a, int sa, double** res, int* sres) {
 
 	for (int i = 1; i < sa; ++i) {
 		if (a[i] != a[i - 1]) {
-			int cur_count = i - pre;  // current count of occurences of present value equals the distance between the position of the currrent element
-									  // and the position of the first element of it in the original array
+			int cur_count = i - pre;  // current count of occurences of the present value equals the distance between
+									  // current element and the first element of that value in the original array
 			if (max_count == cur_count) {
 				if (*sres < sa) (*res)[(*sres)++] = a[pre];  // add that value into the mode array and increase the array's size by one
 			}
@@ -155,7 +154,7 @@ void mode(double* a, int sa, double** res, int* sres) {
 	// resize to save memory
 	// use another variable to resize to avoid case resize unsuccessfully and *res becomes null
 	double* temp = (double*)realloc(*res, sizeof(double) * *sres);
-	if (temp) *res = temp;   // pass to *res again after making sure *temp is resized successfully
+	if (temp) *res = temp;   // pass to *res again after ensuring *temp is resized successfully
 }
 
 
@@ -169,7 +168,7 @@ double findMedian(double arr[], int n) {
 }
 
 
-//Function to find the Mean Absolute Deviation from a set, using precomputed mean
+//return the Mean Absolute Deviation from a set, using precomputed mean
 double findMAD(double arr[], int n, double m) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
@@ -258,12 +257,6 @@ int main(int argc, const char* argv[]) {
 		return -1;
 	}
 	input(argv[1], &x, &y, &n);
-
-	////for testing purposes, if no cmd line arguments are given, use data1.csv as default data file
-	//if (argc == 2) {
-	//	input(argv[1], &x, &y, &n);
-	//}
-	//else input("data1.csv", &x, &y, &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
 	double medx, medy, meanx, meany, * modex, * modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r;
