@@ -306,8 +306,8 @@ int main(int argc, const char* argv[]) {
 	mode(x, n, &modex, &nmx);
 	mode(y, n, &modey, &nmy);
 
-	//set precision to 6 digits after decimal place
-	cout.precision(5);
+	//set precision to 4 digits after decimal place
+	cout.precision(4);
 	cout << fixed;
 
 	//print all results
