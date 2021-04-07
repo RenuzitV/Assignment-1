@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
+#include <chrono>
 #define sqr(x) ((x)*(x))
 #define cub(x) ((x)*sqr(x))
 #define qud(x) (sqr(x)*sqr(x))
@@ -9,46 +10,38 @@
 using namespace std;
 
 //main input variables
-//*x and *y are pointers to int aka arrays
+//*x and *y are pointers to arrays
 double* x, * y;
 int n;
 
 //quicksort algorithm
 void sort(double* x, double* y) {
-	double* mid = x; //choose pivot as first element
-	for (double* i = x + 1; i != y; ++i) {
+	double* mid = x;   //choose pivot as first element
+
+	for (double* i = x + 1; i < y; ++i) {
 		//if pivot is bigger than an element to the right, swap it to the left of pivot
 		//ex : 1 5[pivot] 6 7 2[i] 9 -> 1 2 5[pivot] 7 6[i] 9 
-		if (*mid > *i) { 
-			swap(*mid, *i); 
-			++mid; //go to the next index
+		if (*mid > *i) {
+			swap(*mid, *i);
+			++mid;   //go to the next index
 			swap(*mid, *i);
 		}
 	}
 
-	if (mid - x > 1){
-		sort(x, mid); //if the left side of the pivot has more than 1 element, sort it
+	if (mid - x > 1) {
+		sort(x, mid);  //if the left side of the pivot has more than 1 element, sort it
 	}
 	if (y - mid > 1) {
-		sort(mid + 1, y); //if the right side of the pivot has more than 1 element, sort it
+		sort(mid + 1, y);  //if the right side of the pivot has more than 1 element, sort it
 	}
 }
 
-//reallocates x and y to some size nn, error-proof as far as testing goes
+
+//reallocate x and y to size nn, error-proof as far as testing goes
 void reloc(double** x, double** y, int nn) {
 	if (nn < 1) {
 		cerr << "cannot allocate memory";
 		exit(-1);
-	}
-	//if either x or y is uninitialized, call malloc instead of realloc
-	if (!*x || !*y) {
-		*x = (double*)malloc(sizeof(double) * nn);
-		*y = (double*)malloc(sizeof(double) * nn);
-		if (!*x || !*y) {
-			cerr << "cannot allocate memory";
-			exit(-1);
-		}
-		return;
 	}
 
 	//try to realloc x and y to tx and ty of size nn
@@ -59,12 +52,13 @@ void reloc(double** x, double** y, int nn) {
 		cerr << "cannot allocate memory";
 		exit(-1);
 	}
-	else *x = tx, *y = ty; //assigns pointer x and y to tx and ty
+	else *x = tx, * y = ty; //assign pointer x and y to tx and ty
 }
 
-//main input function, X and Y is read in 1-indexed from a file
-void input(const char s[], double **x, double **y, int *n) {
-	//opens the file and transfer it to the standard input
+
+//main input function, x and y is read in 0-indexed from a file
+void input(const char s[], double** x, double** y, int* n) {
+	//open the file and transfer it to the standard input and check
 	FILE* F;
 	freopen_s(&F, s, "r", stdin);
 	if (!F) {
@@ -72,42 +66,51 @@ void input(const char s[], double **x, double **y, int *n) {
 		exit(-1);
 	}
 
-	//scans the first line and ignore it
-	scanf_s("%*[^\n]s%*c");
-
-	int nn = 4; // current array size
-	reloc(&*x, &*y, nn); //sets x and y to size nn
+	int nn = 4;  //current array size
+	reloc(x, y, nn);  //set x and y to size nn
 
 	//while there is still input, read it
+	//we do not care if the first line is readible or not, because we only care about inputs of format "%lf,%lf"
 	//bit of explaination : 
 	//**x : pointer to array x
 	//*x : array x
 	//*x[*n] : element number *n in array x
 	// &((*x)[*n]) : pointer to the former variable
 	//we add in a bunch of parentheses to avoid compiler confusion, such as &*x just means x, and x[*n] is not something we want to access
-	while (scanf_s("%lf,%lf", &((*x)[*n]), &((*y)[*n])) != EOF) { 
-		++*n;
+	string ss;
+	while (getline(cin, ss)) {
+		//if input is not of format "%lf,%lf", continue
+		//temp 
+		char temp[10] = "\0";
+		//get and checks if the input line is correct
+		//temp is used to check for stray characters, if there is any the input line is corrupted and should not be used
+		if (sscanf_s(ss.c_str(), "%lf,%lf%9[^\n]s", &((*x)[*n]), &((*y)[*n]), temp, 9) != 2 || strlen(temp) > 0) continue;
+		++* n;
 		if (*n == nn) {
 			nn *= 2; //2 is arbitrary, can adjust to any number > 1
 			//the idea is to increase the size of the array by a dramatic ammount, so we dont have to reallocate per input
-			//for inputs up to 6e4, we only need to reallocate 8 times
+			//for inputs up to 6e4, we only need to reallocate log2(6e4) =  times
 			//the number of times we need to reallocate can be computed as log(size, multiplier)
 			reloc(x, y, nn);
 		}
 	}
-	//reallocates x and y to the correct size of items + 5 for safety measures
+
+	fclose(F);
+	//reallocate x and y to the correct size of items + 5 for safety measures
 	reloc(x, y, *n + 5);
 }
 
-//processes data in some sort of way
+
+//process data in some sort of way
 void process() {
 	//sorts x and y in non-decreasing order
-	sort(x, x+n);
-	sort(y, y+n);
+	sort(x, x + n);
+	sort(y, y + n);
 }
 
-//returns the average number of the input aka arithmetic mean
-double mean(double *x, int n) {
+
+//return the average number of an input aka arithmetic mean
+double mean(double* x, int n) {
 	double res = 0;
 	for (int i = 0; i < n; ++i) {
 		res += x[i];
@@ -115,69 +118,78 @@ double mean(double *x, int n) {
 	return res / n;
 }
 
-// function to return the most frequent element(s)
-void mode(double* a, int size, int *nz, double **res) {
-	if (size < 1) return;
-	*res = (double*)malloc(sizeof(double) * size);
-	if (!*res) return;
-	int max_count = 0, i = 1, pre = 0, nres = 0;
-	while (i < size) {
+
+// return the most frequent element(s) of an SORTED array a (size sa) to an array res (the mode array) (size s_res)
+void mode(double* a, int sa, double** res, int* sres) {
+	if (sa < 1) return;
+
+	// init res to have size equal to array a, we will reduce it later
+	*res = (double*)malloc(sizeof(double) * sa);
+	if (!*res) return;   // check if malloc is successful
+
+	//max_count is the number of occurences of the mode(s)
+	// pre is the position of the first element of the present value we consider
+	int max_count = 0, pre = 0;
+	*sres = 0;
+
+	//temp variable for this function only
+	a[sa] = INFINITY;
+
+	// i <= sa is intentional, this does NOT produce any bugs since our array is always 5 elements bigger than its size
+	for (int i = 1; i <= sa; ++i) {
 		if (a[i] != a[i - 1]) {
-			int cur_count = i - pre;
-			if (max_count <= cur_count) {
-				if (max_count == cur_count) {
-					if (nres < size) (*res)[nres++] = a[pre];
-				}
-				else {
-					max_count = cur_count;
-					(*res)[0] = a[pre];
-					nres = 1;
-				}
+			int cur_count = i - pre;  // current count of occurences of the present value equals the distance between
+									  // current element and the first element of that value in the original array
+			if (max_count == cur_count) {
+				if (*sres < sa) (*res)[(*sres)++] = a[pre];  // add that value into the mode array and increase the array's size by one
 			}
-			pre = i;
-		}
-		i++;
-	}
-	//one last check at i = size
-	int cur_count = i - pre;
-	if (max_count <= cur_count) {
-		if (max_count == cur_count) {
-			if (nres < size) (*res)[nres++] = a[pre];
-		}
-		else {
-			max_count = cur_count;
-			(*res)[0] = a[pre];
-			nres = 1;
+			else if (max_count < cur_count) {
+				max_count = cur_count;   // if new max_count is found then update it
+				(*res)[0] = a[pre];   // update the mode array from its 1st byte
+				*sres = 1;  // update size of the mode array
+			}
+			pre = i;  // move to the next value
 		}
 	}
-	* nz = nres;
-	double *t = (double*)realloc(*res, sizeof(double) * nres);
-	if (t) *res = t;
+
+	//if all elements are mode, there is no mode
+	if (*sres * max_count == sa) *sres = 0;
+
+	// resize to save memory
+	// use another variable to resize to avoid case resize unsuccessfully and *res becomes null
+	double* temp = (double*)realloc(*res, sizeof(double) * *sres);
+	if (temp) *res = temp;   // pass to *res again after ensuring *temp is resized successfully
 }
 
+
 //Function to find the Median of the array
+//only works on sorted array
 double findMedian(double arr[], int n) {
 	if (n % 2 == 0) {
-		return ((double)arr[(n - 1) / 2] + arr[n / 2]) / 2;
+		return (arr[(n - 1) / 2] + arr[n / 2]) / 2;
 	}
 	else return arr[n / 2];
 }
 
-//Function to find the Mean Absolute Deviation 
+
+//return the Mean Absolute Deviation from a set, using precomputed mean
 double findMAD(double arr[], int n, double m) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
 		sum += fabs(arr[i] - m);
 	}
-	return sum / ((double) n - 1);
+	return sum / ((double)n);
 }
 
-//Function to find First Quartile accounting median
+
+//Function to find First Quartile from a set using precomputed median
+//only works on sorted array
 double findQ1(double arr[], int n) {
-	return findMedian(arr, n/2);
+	return findMedian(arr, n / 2);
 }
 
-//calculates variance from a set of input
+
+//calculate variance from a set of input using precomputed median
 double calVariance(double* a, int n, double mean) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
@@ -186,35 +198,38 @@ double calVariance(double* a, int n, double mean) {
 	return sum / ((double)n - 1);
 }
 
-//calculates stdardard deviation via variance
+
+//calculate stdardard deviation via variance
 double calStandardDeviation(double variance) {
 	return sqrt(variance);
 }
 
-//calculates skew of a data set
+
+//calculate skew of a data set using precomputed median and standard deviation
 double skew(double x[], double sd, double m, int n) {
 	double res = 0;
 	for (int i = 0; i < n; ++i) {
 		//cub is a macro for cube function aka f(x) = x^3
 		res += cub(x[i] - m);
 	}
-
 	return res / ((double)n - 1) / cub(sd);
 }
 
-//calculates kurtosis from a set, using precomputed mean and standard deviation
+
+//calculate kurtosis from a set, using precomputed mean and standard deviation
 double kurt(double x[], double sd, double m, int n) {
 	double res = 0;
 	double qsd = qud(sd);
 	for (int i = 0; i < n; ++i) {
 		//qud is a macro for quad function aka f(x) = x^4
 		//we divide each qud() by n and qsd to avoid overflowing
-		res += qud((double)x[i] - m) / ((long long)n) / qsd;
+		res += qud(x[i] - m) / ((double)n) / qsd;
 	}
 	return res - 3;
 }
 
-//calculates covariance from two sets of data, using meanX and meanY as precomputed values
+
+//calculate covariance from two sets of data, using meanX and meanY as precomputed values
 double calCovariance(double x[], double y[], int n, double meanX, double meanY) {
 	double sum = 0;
 	for (int i = 0; i < n; i++) {
@@ -223,38 +238,38 @@ double calCovariance(double x[], double y[], int n, double meanX, double meanY) 
 	return sum / ((double)n - 1);
 }
 
-//calculates pearson's correlation coefficient r using covariance and standard deviation function
+
+//calculate pearson's correlation coefficient r using covariance and standard deviation function
 double pearson(double cov, double stdevx, double stdevy) {
 	return cov / stdevx / stdevy;
 }
 
-// fnction find and print out linear regression
+
+// function find and print linear regression of a dataset, using all precomputed values of an input
 void linear_regression(double mean_a, double mean_b, double stdev_a, double stdev_b, double cor_coeff) {
 	double slope = cor_coeff * stdev_b / stdev_a;
 	double intercept = mean_b - slope * mean_a;
 	cout << "y = " << slope << "x + " << intercept << "\n";
 }
+
+
+
 //********************************************			main function			********************************************
-int main(int argc, const char* argv[]){
-	//gets cmd line argument and runs it
-	/*
+int main(int argc, const char* argv[]) {
 	if (argc != 2) {
 		cerr << "wrong argument";
 		return -1;
 	}
-	input(argv[1], &n);
-	*/
-
-	//for testing purposes if no cmd line arguments are given, use data1.csv as default data file
-	if (argc == 2) {
-		input(argv[1], &x, &y, &n);
-	}
-	else input("data1.csv", &x, &y, &n);
+	input(argv[1], &x, &y, &n);
 
 	//variables for each quesinton, we store each function's answer in here for later use
-	double medx, medy, meanx, meany, *modex, *modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r;
+	double medx, medy, meanx, meany, * modex, * modey, varx, vary, stdevx, stdevy, madx, mady, q1x, q1y, skewx, skewy, kurtx, kurty, cov, r;
 
-	//calculates the function and puts them in their respective variable
+	//initialize the variables
+	medx = medy = meanx = meany = varx = vary = stdevx = stdevy = madx = mady = q1x = q1y = skewx = skewy = kurtx = kurty = cov = r = 0;
+	modex = modey = NULL;
+
+	//calculate the function and put them in their respective variable
 	meanx = mean(x, n);
 	meany = mean(y, n);
 
@@ -277,7 +292,7 @@ int main(int argc, const char* argv[]){
 
 	r = pearson(cov, stdevx, stdevy);
 
-	//processes the input
+	//process the input, this only sorts the array for now
 	process();
 
 	medx = findMedian(x, n);
@@ -286,21 +301,22 @@ int main(int argc, const char* argv[]){
 	q1x = findQ1(x, n);
 	q1y = findQ1(y, n);
 
+	//nmx and nmy are modex's and modey's sizes
 	int nmx = 0, nmy = 0;
-	mode(x, n, &nmx, &modex);
-	mode(y, n, &nmy, &modey);
+	mode(x, n, &modex, &nmx);
+	mode(y, n, &modey, &nmy);
 
-	//sets precision to 6 digits after decimal place
-	cout.precision(6);
+	//set precision to 6 digits after decimal place
+	cout.precision(5);
 	cout << fixed;
 
-	//print answers
+	//print all results
 	cout << "median_x = " << medx << " - median_y = " << medy << endl;
 	cout << "mode_x = {";
 	for (int i = 0; i < nmx; ++i) {
 		cout << modex[i] << (i == nmx - 1 ? "" : ", ");
 	}
-	cout << "} - mode_y : {";
+	cout << "}\nmode_y = {";
 	for (int i = 0; i < nmy; ++i) {
 		cout << modey[i] << (i == nmy - 1 ? "" : ", ");
 	}
@@ -314,5 +330,12 @@ int main(int argc, const char* argv[]){
 	cout << "cov(x_y) = " << cov << endl;
 	cout << "r(x_y) = " << r << endl;
 	linear_regression(meanx, meany, stdevx, stdevy, r);
+
+	cout << "ASSIGNMENT 1 GROUP 22\n";
+	cout << "s3878076, s3878076@rmit.edu.vn, Duy, Nguyen\n";
+	cout << "s3877707, s3877707@rmit.edu.vn, Khanh, Tran\n";
+	cout << "s3804803, s3804803@rmit.edu.vn, Ngan, Nguyen\n";
+	cout << "s3872104, s3872104@rmit.edu.vn, Quynh, Tran" << endl;
+
 	return 0;
 }
