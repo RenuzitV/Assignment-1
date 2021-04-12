@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 #include <iomanip>
-#include <chrono>
+#include <cstring>
+#include <cmath>
 #define sqr(x) ((x)*(x))
 #define cub(x) ((x)*sqr(x))
 #define qud(x) (sqr(x)*sqr(x))
